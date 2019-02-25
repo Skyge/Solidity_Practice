@@ -41,18 +41,30 @@ contract FIFO is Ownable {
         delete itemByAddress[removal._from];
         delete itemsByIndex[removal._from];
         delete items[0];
-        _total = _total.sub(1);
+        require(recycling(1, _total));
         
         return true;
     }
     
     function removeItemByAddress(address _toRemove) public onlyOwner returns (bool) {
         require(itemByAddress[_toRemove]._from != address(0), "Invalid address!");
+        uint256 index = itemsByIndex[_toRemove];
         delete itemByAddress[_toRemove];
-        delete items[itemsByIndex[_toRemove]];
         delete itemsByIndex[_toRemove];
-        _total = _total.sub(1);
+        delete items[index];
+        require(recycling(index+1, _total));
         
+        return true;
+    }
+
+    function recycling(uint256 _start, uint256 _round) internal returns (bool) {
+        for (uint256 i = _start; i <= _round-1; i++) {
+            items[i-1] = items[i];
+        }
+        delete items[_round-1];
+        items.length--;
+        _total = _total.sub(1);
+
         return true;
     }
     
