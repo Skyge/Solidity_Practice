@@ -1,7 +1,7 @@
 pragma solidity 0.4.23;
 
-import "./Ownable.sol";
-import "./SafeMath.sol";
+import "../Library/Ownable.sol";
+import "../Library/SafeMath.sol";
 
 contract FIFO is Ownable {
     using SafeMath for uint256;
