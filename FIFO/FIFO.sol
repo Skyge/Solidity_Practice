@@ -70,6 +70,7 @@ contract FIFO is Ownable {
 
     address private _currentAddress;
     address private _toRemoveAddress;
+    uint256 private _total;
     
     struct PlayerInfo{
         uint256 _ownAmount;
@@ -78,39 +79,56 @@ contract FIFO is Ownable {
         address _nextAddress;
     }
     
-    mapping(address => PlayerInfo) players;
-	// mapping(uint256 => address) indexes;
+    mapping(address => PlayerInfo) public players;
+
+    function getTotal() public view returns (uint256) {
+        return _total;
+    }
+
+    function getEndAddress() public view returns (address) {
+        return _currentAddress;
+    }
+
+    function getStartAddress() public view returns (address) {
+        return _toRemoveAddress;
+    }
 
 	/**
-	* @dev This is equal to push an element in the array list.
-	*/
-    function addPlayer(address _account, uint256 _amount) public onlyOwner returns (bool) {
-        if (_currentAddress == address(0)) {
+	 * @dev This is equal to push an element in the array list.
+	 */
+    function addPlayer(address _account, uint256 _amount) public  returns (bool) {
+        if (_total == 0) {
             _toRemoveAddress = _account;
+        }else {
+            players[_currentAddress]._nextAddress = _account;
         }
         
         players[_account] = PlayerInfo(_amount, _account, _currentAddress, address(0));
         _currentAddress = _account;
+        _total = _total + 1;
     }
 
 	/**
-	* @dev This is equal to pop an element in the array list.
-	*/
-    function removePlayer() public onlyOwner returns (bool) {
+	 * @dev This is equal to pop an element in the array list.
+	 */
+    function removePlayer() public  returns (bool) {
         address _temp = players[_toRemoveAddress]._nextAddress;
         delete players[_toRemoveAddress];
+        players[_temp]._lastAddress = address(0);
         _toRemoveAddress = _temp;
+        _total = _total - 1;
     }
 
 	/**
-	* @dev This is equal to delete an element in the linked list.
-	*/
-    function removePlayerByAddress(address _toDelete) public onlyOwner returns (bool) {
+	 * @dev This is equal to delete an element in the linked list.
+	 */
+    function removePlayerByAddress(address _toDelete) public  returns (bool) {
         address _tempLast = players[_toDelete]._lastAddress;
         address _tempNext = players[_toDelete]._nextAddress;
         
         delete players[_toDelete];
         players[_tempLast]._nextAddress = _tempNext;
         players[_tempNext]._lastAddress = _tempLast;
+        _total = _total - 1;
     }
 }
