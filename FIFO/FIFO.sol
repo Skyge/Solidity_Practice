@@ -19,6 +19,9 @@ contract FIFO is Ownable {
     
     mapping(address => PlayerInfo) public players;
 
+    event AddPlayer(address indexed _account, uint256 _value);
+    event RemovePlayer(address indexed _toRemove);
+
     function getTotal() public view returns (uint256) {
         return _total;
     }
@@ -44,6 +47,8 @@ contract FIFO is Ownable {
         players[_account] = PlayerInfo(_amount, _account, _currentAddress, address(0));
         _currentAddress = _account;
         _total = _total.add(1);
+
+        emit AddPlayer(_account, _amount);
     }
 
 	/**
@@ -53,6 +58,8 @@ contract FIFO is Ownable {
         require(_exist(_toRemoveAddress), "Already empty!");
         address _temp = players[_toRemoveAddress]._nextAddress;
         delete players[_toRemoveAddress];
+        emit RemovePlayer(_toRemoveAddress);
+
         players[_temp]._lastAddress = address(0);
         _toRemoveAddress = _temp;
         _total = _total.sub(1);
@@ -67,6 +74,8 @@ contract FIFO is Ownable {
         address _tempNext = players[_toDelete]._nextAddress;
         
         delete players[_toDelete];
+        emit RemovePlayer(_toDelete);
+
         players[_tempLast]._nextAddress = _tempNext;
         if (_tempNext != address(0)) {
             players[_tempNext]._lastAddress = _tempLast;
