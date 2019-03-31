@@ -26,3 +26,19 @@ contract Attack {
         v.withdraw();
     }
 }
+
+//*** Exercice 2 ***//
+contract SimpleToken{
+    mapping(address => uint) public balances;
+    
+    function buyToken() payable {
+        balances[msg.sender] += msg.value / 1 ether;
+    }
+
+    function sendToken(address _recipient, uint _amount) {
+        require(balances[msg.sender]!=0); // You must have some tokens.
+        
+        balances[msg.sender]-=_amount;
+        balances[_recipient]+=_amount;
+    }  
+}
