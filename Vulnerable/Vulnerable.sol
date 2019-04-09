@@ -79,3 +79,27 @@ contract BuyToken {
         price=_price;
     }
 }
+
+//*** Exercice 5 ***//
+contract CountContribution{
+    mapping(address => uint) public contribution;
+    uint public totalContributions;
+    address owner = msg.sender;
+    
+    function CountContribution() public {
+        recordContribution(owner, 1 ether);
+    }
+    
+    function contribute() public payable {
+        recordContribution(msg.sender, msg.value);
+    }
+    
+    /** @dev Record a contribution. To be called by CountContribution and contribute.
+     *  @param _user The user who contributed.
+     *  @param _amount The amount of the contribution.
+     */
+    function recordContribution(address _user, uint _amount) {
+        contribution[_user] += _amount;
+        totalContributions += _amount;
+    }
+}
