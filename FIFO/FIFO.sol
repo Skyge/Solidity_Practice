@@ -6,7 +6,7 @@ import "../Library/SafeMath.sol";
 contract FIFO is Ownable {
     using SafeMath for uint256;
 
-    address private _currentAddress;
+    address private _endAddress;
     address private _toRemoveAddress;
     uint256 private _total;
     
@@ -27,7 +27,7 @@ contract FIFO is Ownable {
     }
 
     function getEndAddress() public view returns (address) {
-        return _currentAddress;
+        return _endAddress;
     }
 
     function getStartAddress() public view returns (address) {
@@ -41,11 +41,11 @@ contract FIFO is Ownable {
         if (_total == 0) {
             _toRemoveAddress = _account;
         }else {
-            players[_currentAddress]._nextAddress = _account;
+            players[_endAddress]._nextAddress = _account;
         }
         
-        players[_account] = PlayerInfo(_amount, _account, _currentAddress, address(0));
-        _currentAddress = _account;
+        players[_account] = PlayerInfo(_amount, _account, _endAddress, address(0));
+        _endAddress = _account;
         _total = _total.add(1);
 
         emit AddPlayer(_account, _amount);
@@ -55,39 +55,45 @@ contract FIFO is Ownable {
 	 * @dev This is equal to pop an element in the array list.
 	 */
     function removePlayer() public  returns (bool) {
-        require(_exist(_toRemoveAddress), "Already empty!");
+        require(_isExist(_toRemoveAddress), "Already empty!");
         address _temp = players[_toRemoveAddress]._nextAddress;
         delete players[_toRemoveAddress];
         emit RemovePlayer(_toRemoveAddress);
 
         players[_temp]._lastAddress = address(0);
         _toRemoveAddress = _temp;
+        if (_temp == address(0)) {
+            _endAddress = address(0);
+        }
         _total = _total.sub(1);
     }
 
 	/**
 	 * @dev This is equal to delete an element in the linked list.
 	 */
-    function removePlayerByAddress(address _toDelete) public  returns (bool) {
-        require(_exist(_toRemoveAddress), "Invalid address!");
-        address _tempLast = players[_toDelete]._lastAddress;
-        address _tempNext = players[_toDelete]._nextAddress;
+    function removePlayerByAddress(address _toDeleteAddress) public  returns (bool) {
+        require(_isExist(_toDeleteAddress), "Invalid address!");
+        address _tempLastAddress = players[_toDeleteAddress]._lastAddress;
+        address _tempNextAddress = players[_toDeleteAddress]._nextAddress;
         
-        delete players[_toDelete];
-        emit RemovePlayer(_toDelete);
+        delete players[_toDeleteAddress];
+        emit RemovePlayer(_toDeleteAddress);
 
-        players[_tempLast]._nextAddress = _tempNext;
-        if (_tempNext != address(0)) {
-            players[_tempNext]._lastAddress = _tempLast;
-        } 
+        if (_tempLastAddress != address(0)) {
+            players[_tempLastAddress]._nextAddress = _tempNextAddress;
+        } else {
+            _toRemoveAddress = _tempNextAddress;
+        }
+
+        if (_tempNextAddress != address(0)) {
+            players[_tempNextAddress]._lastAddress = _tempLastAddress;
+        } else {
+            _endAddress = _tempLastAddress;
+        }
         _total = _total.sub(1);
     }
 
-    function _exist(address _searching) internal view returns (bool) {
-        if (players[_searching]._account != address(0)) {
-            return true;
-        } else {
-            return false;
-        }
+    function _isExist(address _searchingAddress) internal view returns (bool) {
+        return players[_searchingAddress]._account != address(0);
     }
 }

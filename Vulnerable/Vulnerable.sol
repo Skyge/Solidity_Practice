@@ -279,3 +279,4 @@ contract Vault {
         balances[msg.sender]=0;
     }
 }
+
